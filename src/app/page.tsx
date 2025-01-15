@@ -130,7 +130,11 @@ function Home() {
                 borderRadius: "20px",
               }}
             >
-              <Image src={data.sprites.front_default} alt={data.name} />
+              <Image
+                style={{ width: "200px", height: "200px" }}
+                src={data.sprites.front_default}
+                alt={data.name}
+              />
             </Flex>
             <Flex
               style={{
