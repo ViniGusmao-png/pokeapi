@@ -1,11 +1,35 @@
 "use client";
-import { Box, Button, Flex, Input, Text, TextInput } from "@mantine/core";
+import { Box, Button, Flex, Text, TextInput, Image } from "@mantine/core";
 import "./page.css";
+import axios from "axios";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+const buscarPoke = async (name: string) => {
+  const { data } = await axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  return data;
+};
+
 function Home() {
+  const [input, setInput] = useState("");
+  const [busca, setBusca] = useState("");
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["pokemon", busca],
+    queryFn: () => buscarPoke(busca),
+    enabled: !!busca,
+  });
+
+  const handleSearchA = () => {
+    setBusca(input.toLowerCase());
+  };
+  const handleSearchB = () => {
+    setBusca(input.toLowerCase());
+  };
   return (
     <Box w={"100vw"} h={"100vh"} style={{ backgroundColor: "red" }}>
       <Flex
-        style={{ border: "1px solid blue", gap: "20px" }}
+        style={{ gap: "20px" }}
         display={"flex"}
         direction={"column"}
         justify={"center"}
@@ -34,7 +58,8 @@ function Home() {
         >
           <TextInput
             placeholder="digite o nome do Pokemon"
-            bg={"rgb(123, 160, 49)"}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
             styles={{
               input: {
                 height: "35px",
@@ -56,6 +81,7 @@ function Home() {
                 fontSize: "30px",
                 backgroundColor: "#6D011A",
               }}
+              onClick={handleSearchA}
             >
               {" "}
               A
@@ -68,38 +94,77 @@ function Home() {
                 fontSize: "30px",
                 backgroundColor: "#6D011A",
               }}
+              onClick={handleSearchB}
             >
               {" "}
               B
             </Button>
+            {isLoading && <p>Carregando...</p>}
+            {isError && (
+              <p style={{ color: "black" }}>{(error as Error).message}</p>
+            )}
           </Flex>
         </Flex>
-        <Flex
-          display={"flex"}
-          direction={"column"}
-          align={"center"}
-          style={{ gap: "30px", width: "200px" }}
-        >
-          <Text>Nome do pokemon numero</Text>
-
+        {data && (
           <Flex
             display={"flex"}
             direction={"column"}
-            justify={"center"}
             align={"center"}
-            style={{
-              backgroundColor: "white",
-              width: "200px",
-              height: "200px",
-              backgroundImage: "url('./assets/fundoPoke.png')",
-              backgroundSize: "cover",
-              borderRadius: "20px",
-            }}
+            style={{ gap: "30px", width: "500px" }}
           >
-            <Text>Foto do pokemon</Text>
+            <Text style={{ fontSize: "30px", fontFamily: "sans-serif" }}>
+              {data.name} - {data.order}
+            </Text>
+
+            <Flex
+              display={"flex"}
+              direction={"column"}
+              justify={"center"}
+              align={"center"}
+              style={{
+                backgroundColor: "white",
+                width: "200px",
+                height: "200px",
+                backgroundImage: "url('./assets/fundoPoke.png')",
+                backgroundSize: "cover",
+                borderRadius: "20px",
+              }}
+            >
+              <Image src={data.sprites.front_default} alt={data.name} />
+            </Flex>
+            <Flex
+              style={{
+                height: "35px",
+                borderRadius: "8px",
+                backgroundColor: "rgb(123, 160, 49)",
+                color: "black",
+                fontSize: "20px",
+                fontFamily: "sans-serif",
+                fontWeight: "bold",
+                padding: "5px 5px 5px 5px",
+              }}
+            >
+              <Text
+                style={{
+                  gap: "20px",
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  fontSize: "28px",
+                }}
+              >
+                {" "}
+                {data.types.map(
+                  (typeObj: { type: { name: string } }, index: number) => (
+                    <Text key={index}>{typeObj.type.name}</Text>
+                  )
+                )}
+              </Text>
+            </Flex>
           </Flex>
-          <Text>Elemento do pokemon</Text>
-        </Flex>
+        )}
       </Flex>
     </Box>
   );
